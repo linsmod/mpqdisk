@@ -105,8 +105,21 @@ mpqdisk.exe --mount --config mpqdisk.conf
 mpqdisk.exe --mount --config mpqdisk.conf --debug
 ```
 
+#### 5. 卸载虚拟磁盘
+```cmd
+mpqdisk.exe --umount M:
+```
+
 ### 卸载磁盘
-按 `Ctrl+C` 即可安全卸载虚拟磁盘并退出程序。
+
+有两种方式卸载虚拟磁盘：
+
+1. **命令行卸载**: 使用 `--umount <盘符>` 选项
+   ```cmd
+   mpqdisk.exe --umount M:
+   ```
+
+2. **程序内卸载**: 在挂载状态下按 `Ctrl+C` 安全卸载并退出程序。
 
 ## 配置文件格式
 
