@@ -77,6 +77,7 @@ bool MpqFileSystem::OpenArchives(const std::vector<std::wstring> &mpq_files) {
 void MpqFileSystem::CloseArchivesInternal() {
   if (hMpq) {
     SFileCloseArchive(hMpq);
+    hMpq = NULL;
   }
   file_tree_.clear();
   dir_contents_.clear();

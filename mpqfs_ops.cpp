@@ -1,5 +1,6 @@
 #include "mpqfs_ops.h"
 #include <stdio.h>
+#include "log_macros.h"
 #include <vector>
 
 struct MpqFileContext {
@@ -66,7 +67,7 @@ MpqCreateFile(LPCWSTR FileName, PDOKAN_IO_SECURITY_CONTEXT SecurityContext,
   }
 
   if (!exists) {
-    wprintf(L"CreateFile: NOT FOUND path=%S norm=%S\n", path.c_str(),
+    LOG_PRINT(L"CreateFile: NOT FOUND path=%S norm=%S\n", path.c_str(),
             norm.c_str());
     return STATUS_OBJECT_NAME_NOT_FOUND;
   }
@@ -94,7 +95,7 @@ static void DOKAN_CALLBACK MpqCleanup(LPCWSTR FileName,
     MpqFileContext *ctx = (MpqFileContext *)DokanFileInfo->Context;
     delete ctx;
     DokanFileInfo->Context = 0;
-    wprintf(L"MpqCleanup: clean context for %s\n", FileName);
+    LOG_PRINT(L"MpqCleanup: clean context for %s\n", FileName);
   }
 }
 
@@ -108,7 +109,7 @@ static void DOKAN_CALLBACK MpqCloseFile(LPCWSTR FileName,
     if (hFile) {
       g_mpqfs->CloseFile(hFile);
     }
-    wprintf(L"MpqCloseFile: close handle for %s\n", FileName);
+    LOG_PRINT(L"MpqCloseFile: close handle for %s\n", FileName);
   }
 }
 
@@ -136,7 +137,7 @@ static NTSTATUS DOKAN_CALLBACK MpqReadFile(LPCWSTR FileName, LPVOID Buffer,
   ctx->hOpened = hFile;
   DWORD bytesRead = 0;
       g_mpqfs->ReadFileData(hFile, Buffer, BufferLength, bytesRead, Offset);
-  wprintf(L"ReadFile: bytesRead %d %s\n", bytesRead, FileName);
+  LOG_PRINT(L"ReadFile: bytesRead %d %s\n", bytesRead, FileName);
   
   *ReadLength = bytesRead;
   return STATUS_SUCCESS;
@@ -324,12 +325,12 @@ static NTSTATUS DOKAN_CALLBACK MpqGetVolumeInformation(
 
 static NTSTATUS DOKAN_CALLBACK MpqMounted(LPCWSTR MountPoint,
                                           PDOKAN_FILE_INFO DokanFileInfo) {
-  wprintf(L"Mounted at: %s\n", MountPoint);
+  LOG_PRINT(L"Mounted at: %s\n", MountPoint);
   return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MpqUnmounted(PDOKAN_FILE_INFO DokanFileInfo) {
-  wprintf(L"Unmounted\n");
+  LOG_PRINT(L"Unmounted\n");
   return STATUS_SUCCESS;
 }
 
