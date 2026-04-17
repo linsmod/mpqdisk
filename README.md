@@ -125,22 +125,7 @@ mpqdisk.exe --umount M:
 
 ## 配置文件格式
 
-可以使用配置文件批量管理挂载选项，`mpqdisk.conf` 示例:
-
-```ini
-# MPQDisk 配置文件
-volume_letter = Z:
-volume_label = Warcraft III
-debug = false
-
-# MPQ 文件列表 (按优先级从低到高排列)
-mpq_files = [
-    "war3.mpq",
-    "War3Local.mpq",
-    "War3x.mpq",
-    "War3xlocal.mpq"
-]
-```
+使用配置文件批量管理挂载选项，`mpqdisk.conf` 示例:
 
 ## 技术实现
 
