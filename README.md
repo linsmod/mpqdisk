@@ -3,6 +3,7 @@
 基于 Dokan 文件系统的 MPQ 档案虚拟磁盘挂载工具，可以将多个 MPQ 档案文件叠加挂载为 Windows 虚拟磁盘。
 
 ![Screenshot](screenshot.png)
+![Screenshot2](screenshot2.png)
 
 ## 项目介绍
 
