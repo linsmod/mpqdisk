@@ -2,6 +2,8 @@
 
 基于 Dokan 文件系统的 MPQ 档案虚拟磁盘挂载工具，可以将多个 MPQ 档案文件叠加挂载为 Windows 虚拟磁盘。
 
+![Screenshot](screenshot.png)
+
 ## 项目介绍
 
 MPQDisk 是一个 Windows 平台的命令行工具，使用 Dokan 驱动程序将 Blizzard MPQ 游戏存档文件挂载为系统可见的虚拟磁盘。支持多个 MPQ 文件叠加挂载，后加载的文件优先级更高，覆盖先加载文件中的同名资源。
