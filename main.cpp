@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <io.h>
 #include <fcntl.h>
+#include <windows.h>
 
 static DOKAN_HANDLE g_dokan_handle = nullptr;
 WCHAR g_volume_label[MAX_PATH + 1] = L"MPQDisk";
@@ -25,15 +26,17 @@ static void ShowUsage() {
            L"War3xlocal.mpq\n"
            L"  mpqdisk.exe --mount --files war3.mpq War3Local.mpq --volume Z: "
            L"MyLabel\n"
+           L"  mpqdisk.exe --umount M:\n"
            L"\n"
            L"Options:\n"
            L"  --mount           Mount the filesystem (required)\n"
            L"  --config <path>   Path to config file\n"
            L"  --files <list>    List of MPQ files to mount (overlay mode, "
            L"last has highest priority)\n"
-           L"  --volume <X:> [label]  Volume letter and optional label "
-           L"(default: first available, label: MPQDisk)\n"
-           L"  --debug           Enable debug output\n"
+            L"  --volume <X:> [label]  Volume letter and optional label "
+            L"(default: first available, label: MPQDisk)\n"
+            L"  --umount <X:>     Unmount the filesystem at the specified drive\n"
+            L"  --debug           Enable debug output\n"
            L"  --help            Show this help\n");
 }
 
@@ -65,9 +68,11 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
   _setmode(_fileno(stderr), _O_U16TEXT);
 
   bool do_mount = false;
+  bool do_umount = false;
   bool use_config = false;
   bool debug_mode = false;
   std::wstring config_path;
+  std::wstring umount_point;
   std::wstring volume_letter;
   std::wstring volume_label = L"MPQDisk";
   std::vector<std::wstring> mpq_files;
@@ -98,7 +103,33 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
       }
     } else if (arg == L"--debug") {
       debug_mode = true;
+    } else if (arg == L"--umount") {
+      do_umount = true;
+      if (i + 1 < argc) {
+        umount_point = argv[++i];
+        if (umount_point.length() > 0 && umount_point.back() != L':') {
+          umount_point += L':';
+        }
+        if (umount_point.length() < 2 || umount_point[1] != L':') {
+          fwprintf(stderr, L"Error: Invalid drive letter for --umount\n");
+          return 1;
+        }
+      } else {
+        fwprintf(stderr, L"Error: --umount requires a drive letter\n");
+        return 1;
+      }
     }
+  }
+
+  if (do_umount) {
+    DokanInit();
+    bool success = DokanRemoveMountPoint(umount_point.c_str());
+    if (success)
+        wprintf(L"Unmounted %s\n", umount_point.c_str());
+    else
+        fwprintf(stderr, L"Error: Failed to unmount %s\n", umount_point.c_str());
+    DokanShutdown();
+    return 0;
   }
 
   if (!do_mount) {
@@ -172,7 +203,27 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
     return 1;
   }
 
-  wprintf(L"Filesystem mounted at %s. Press Ctrl+C to unmount.\n", mount_point);
+  WCHAR actual_mount[MAX_PATH] = L"";
+  DWORD drives = GetLogicalDrives();
+  for (WCHAR letter = L'A'; letter <= L'Z'; letter++) {
+    if (drives & (1 << (letter - L'A'))) {
+      WCHAR path[4] = {letter, L':', L'\\', 0};
+      WCHAR name[MAX_PATH];
+      DWORD serial, maxcomp, flags;
+      WCHAR fsname[MAX_PATH];
+      if (GetVolumeInformationW(path, name, MAX_PATH, &serial, &maxcomp, &flags, fsname, MAX_PATH)) {
+        if (wcscmp(name, g_volume_label) == 0) {
+          wcscpy_s(actual_mount, path);
+          break;
+        }
+      }
+    }
+  }
+  if (actual_mount[0]) {
+    wprintf(L"Filesystem mounted at %s. Press Ctrl+C to unmount.\n", actual_mount);
+  } else {
+    wprintf(L"Filesystem mounted. Press Ctrl+C to unmount.\n");
+  }
   DokanWaitForFileSystemClosed(g_dokan_handle, INFINITE);
 
   g_mpqfs->CloseArchives();
